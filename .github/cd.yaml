@@ -1,14 +1,17 @@
 name: Release Application
 
 on:
-  # ADD YOUR TRIGGER HERE
+  push:
+    branches:
+      - main        # or "master" or whatever your default branch is
 
 env:
-  # ADD YOUR ENVIRONMENT VARIABLES HERE
+  REGISTRY: quay.io
+  IMAGE_NAME: elias_dams/alm-workshop
 
 jobs:
   deploy:
-    if: # ADD YOUR CONDITION HERE
+    if: github.ref == 'refs/heads/main'
     environment: development
     runs-on: ubuntu-22.04
     steps:
@@ -18,9 +21,9 @@ jobs:
       - name: Login OpenShift
         uses: redhat-actions/oc-login@v1
         with:
-          openshift_server_url: <<TODO>>
-          openshift_token: <<TODO>>
-          namespace: <<TODO>>
+          openshift_server_url: ${{ secrets.OPENSHIFT_SERVER_URL }}
+          openshift_token: ${{ secrets.OPENSHIFT_TOKEN }}
+          namespace: ${{ secrets.OPENSHIFT_NAMESPACE }}
 
       - name: Apply Openshift YAML
         run: |
