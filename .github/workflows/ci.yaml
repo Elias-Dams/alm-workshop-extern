@@ -1,10 +1,14 @@
 name: Golang Docker Build
 
 on:
-  # trigger on push to all branches
+  # CI on all pushes
   push:
     branches:
       - '**'
+
+  # Extra run when a GitHub Release is published
+  release:
+    types: [published]
 
 env:
   CONTAINER_REPOSITORY: quay.io/elias_dams      # your Quay namespace
@@ -31,6 +35,11 @@ jobs:
         uses: docker/metadata-action@v4
         with:
           images: ${{ env.CONTAINER_REPOSITORY }}/${{ env.CONTAINER_IMAGE }}
+          tags: |
+            # When this is a GitHub Release event, use the release tag as image tag (SemVer)
+            type=raw,value=${{ github.event.release.tag_name }},enable=${{ github.event_name == 'release' }}
+            # For normal pushes, fall back to sha-based tag
+            type=sha,enable=${{ github.event_name != 'release' }}
 
       - name: Build and push Docker image
         uses: docker/build-push-action@v3
